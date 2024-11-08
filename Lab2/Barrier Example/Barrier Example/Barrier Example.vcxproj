@@ -18,6 +18,15 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\..\..\..\..\Downloads\prod-con (1)\Event.h" />
+    <ClInclude Include="..\..\..\..\..\..\..\Downloads\prod-con (1)\SafeBuffer.h" />
+    <ClInclude Include="..\..\..\..\..\..\..\Downloads\prod-con (1)\Semaphore.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\..\..\..\..\Downloads\prod-con (1)\main.cpp" />
+    <ClCompile Include="..\..\..\..\..\..\..\Downloads\prod-con (1)\Semaphore.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
@@ -126,13 +135,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="..\..\rendezvous.cpp" />
-    <ClCompile Include="..\..\Semaphore.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\Semaphore.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

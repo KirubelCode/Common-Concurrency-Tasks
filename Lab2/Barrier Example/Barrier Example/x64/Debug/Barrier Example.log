@@ -1,2 +1,13 @@
-﻿  rendezvous.cpp
-  Barrier Example.vcxproj -> C:\Users\kirut\Desktop\Year 4\Concurrent Dev\Labs\Lab2\Barrier Example\x64\Debug\Barrier Example.exe
+﻿  main.cpp
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.37.32822\include\xutility(254,61): error C2665: 'SafeBuffer<std::shared_ptr<Event>>::SafeBuffer': no overloaded function could convert all the argument types
+C:\Users\kirut\Downloads\prod-con (1)\SafeBuffer.h(74,1): message : could be 'SafeBuffer<std::shared_ptr<Event>>::SafeBuffer(const SafeBuffer<std::shared_ptr<Event>> &)'
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.37.32822\include\xutility(254,61): message : 'SafeBuffer<std::shared_ptr<Event>>::SafeBuffer(const SafeBuffer<std::shared_ptr<Event>> &)': cannot convert argument 1 from 'const int' to 'const SafeBuffer<std::shared_ptr<Event>> &'
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.37.32822\include\xutility(254,82): message : Reason: cannot convert from 'const int' to 'const SafeBuffer<std::shared_ptr<Event>>'
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.37.32822\include\xutility(254,61): message : while trying to match the argument list '(const int)'
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.37.32822\include\memory(2104,18): message : see reference to function template instantiation 'void std::_Construct_in_place<_Ty,const int&>(_Ty &,const int &) noexcept(false)' being compiled
+          with
+          [
+              _Ty=SafeBuffer<std::shared_ptr<Event>>
+          ]
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.37.32822\include\memory(2779,46): message : see reference to function template instantiation 'std::_Ref_count_obj2<SafeBuffer<std::shared_ptr<Event>>>::_Ref_count_obj2<const int&>(const int &)' being compiled
+C:\Users\kirut\Downloads\prod-con (1)\main.cpp(67,20): message : see reference to function template instantiation 'std::shared_ptr<SafeBuffer<std::shared_ptr<Event>>> std::make_shared<SafeBuffer<std::shared_ptr<Event>>,const int&>(const int &)' being compiled
