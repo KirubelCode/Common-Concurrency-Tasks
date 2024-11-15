@@ -3,9 +3,9 @@
  * Filename: SafeBuffer.h
  * Description: 
  * Author: Joseph
- * Maintainer: 
+ * Maintainer: Kirubel Temesgen
  * Created: Tue Jan  8 12:30:23 2019 (+0000)
- * Version: 
+ * Version: 2
  * Package-Requires: ()
  * Last-Updated: Tue Jan  8 12:30:25 2019 (+0000)
  *           By: Joseph
@@ -49,31 +49,44 @@
 #include <queue>
 #include <mutex>
 #include <condition_variable>
-using namespace std;
 
 template <typename T>
 class SafeBuffer {
 private:
-    queue<T> buffer;                // Queue to hold items in the buffer
-    mutex mtx;                      // Mutex to protect access to the buffer
+    std::queue<T> buffer;                // Queue to hold items in the buffer
+    std::mutex mtx;                      // Mutex to protect access to the buffer
+    std::condition_variable not_empty;   // Condition variable for empty buffer
+    std::condition_variable not_full;    // Condition variable for full buffer
+    size_t max_size;                     // Maximum size of the buffer
 
 public:
-    SafeBuffer() = default;
+    SafeBuffer(size_t size) : max_size(size) {}
 
     void put(const T& item) {
-        lock_guard<mutex> lock(mtx); // Lock the buffer before modifying
-        buffer.push(item);
+        std::unique_lock<std::mutex> lock(mtx);          // Lock the buffer
+        not_full.wait(lock, [this]() {                  // Wait until buffer is not full
+            return buffer.size() < max_size;
+            });
+        buffer.push(item);                              // Add item to the buffer
+        not_empty.notify_one();                         // Notify a waiting consumer
     }
 
     T get() {
-        lock_guard<mutex> lock(mtx); // Lock the buffer before accessing
-        T item = buffer.front();
-        buffer.pop();
+        std::unique_lock<std::mutex> lock(mtx);          // Lock the buffer
+        not_empty.wait(lock, [this]() {                 // Wait until buffer is not empty
+            return !buffer.empty();
+            });
+        T item = buffer.front();                        // Get the front item
+        buffer.pop();                                   // Remove it from the buffer
+        not_full.notify_one();                          // Notify a waiting producer
         return item;
     }
 };
 
 #endif // SAFE_BUFFER_H
+
+
+
 
 
 

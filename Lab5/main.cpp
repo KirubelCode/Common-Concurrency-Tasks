@@ -7,83 +7,75 @@
 #include <memory>
 #include <atomic>
 
-atomic<int> eventCounter(0);  // Atomic counter for unique event IDs
-mutex cout_mutex;  // Mutex for protecting cout output
-
 using namespace std;
 
-static const int num_threads = 100;
-const int buffer_size = 20;         // Updated buffer size name to avoid conflict
-Semaphore spaces(buffer_size);      // Semaphore to track available buffer space
-Semaphore items(0);                 // Semaphore to track available items to consume
-mutex buffer_mutex;                 // Mutex to protect the buffer
-/*! \fn producer
-    \brief Creates events and adds them to buffer
-*/
+atomic<int> eventCounter(0);  // Unique event IDs
+mutex cout_mutex;             // Synchronise output
+mutex buffer_mutex;           // Protect buffer access
+const int buffer_size = 20; // Define the buffer size
+Semaphore spaces(buffer_size); // Tracks available buffer space
+Semaphore items(0);            // Tracks available items in the buffer
+
+const int num_threads = 100;
+
+
+// Produces events and adds them to the buffer
 void producer(shared_ptr<SafeBuffer<shared_ptr<Event>>> theBuffer, int numLoops) {
     for (int i = 0; i < numLoops; ++i) {
-        spaces.Wait();                               // Wait for an available space in buffer
+        shared_ptr<Event> e = make_shared<Event>(eventCounter++); // Create event
 
-        int uniqueId = eventCounter++;               // Get a unique event ID
-        shared_ptr<Event> e = make_shared<Event>(uniqueId);  // Create a new event
+        spaces.Wait();          // Wait for space in the buffer
+        buffer_mutex.lock();    // Lock buffer
+        theBuffer->put(e);      // Add event to buffer
+        buffer_mutex.unlock();  // Unlock buffer
+        items.Signal();         // Signal item availability
 
-        theBuffer->put(e);                           // Add event to the buffer
-        items.Signal();                              // Signal that an item is available
-
+        // Output production
         {
-            lock_guard<mutex> lock(cout_mutex);      // Lock cout to prevent jumbled output
-            cout << "Producing event " << uniqueId << endl;
+            lock_guard<mutex> lock(cout_mutex);
+            cout << "Producing event " << e->getID() << endl;
         }
     }
 }
 
-
-
-
-/*! \fn consumer
-    \brief Takes events from buffer and consumes them
-*/
+// Retrieves events from the buffer and processes them
 void consumer(shared_ptr<SafeBuffer<shared_ptr<Event>>> theBuffer, int numLoops) {
     for (int i = 0; i < numLoops; ++i) {
-        items.Wait();                                 // Wait for an item to be available
+        items.Wait();           // Wait for an available item
+        buffer_mutex.lock();    // Lock buffer
+        shared_ptr<Event> e = theBuffer->get(); // Retrieve event
+        buffer_mutex.unlock();  // Unlock buffer
+        spaces.Signal();        // Signal space availability
 
-        shared_ptr<Event> e = theBuffer->get();       // Get the event from the buffer
-
-        spaces.Signal();                              // Signal that space is now available in buffer
-
+        // Output consumption
         {
-            lock_guard<mutex> lock(cout_mutex);       // Lock cout to prevent jumbled output
+            lock_guard<mutex> lock(cout_mutex);
             cout << "Consuming event " << e->getID() << endl;
         }
 
-        e->consume();                                 // Process (consume) the event
+        e->consume();           // Process event
     }
 }
 
+int main() {
+    vector<thread> threads(num_threads);
+    auto buffer = make_shared<SafeBuffer<shared_ptr<Event>>>(buffer_size);
 
-
-int main(void) {
-    vector<thread> vt(num_threads);     // Vector to hold threads
-    auto aBuffer = make_shared<SafeBuffer<shared_ptr<Event>>>(buffer_size); // Create shared buffer
-
-    /**< Launch the threads */
-    int i = 0;
-    for (thread& t : vt) {
+    // Alternate producer and consumer threads
+    for (int i = 0; i < num_threads; ++i) {
         if (i < num_threads / 2) {
-            t = thread(producer, ref(aBuffer), 10); // Launch producer threads, pass shared buffer by reference
+            threads[i] = thread(producer, ref(buffer), 10);
         }
         else {
-            t = thread(consumer, ref(aBuffer), 10); // Launch consumer threads, pass shared buffer by reference
+            threads[i] = thread(consumer, ref(buffer), 10);
         }
-        ++i;
     }
 
-    /**< Join the threads with the main thread */
-    for (auto& v : vt) {
-        v.join(); // Wait for all threads to complete
+    // Wait for all threads to finish
+    for (auto& t : threads) {
+        t.join();
     }
 
-    cout << "All threads have completed." << endl; // Print a simple message
-
+    cout << "All threads have completed." << endl;
     return 0;
 }
