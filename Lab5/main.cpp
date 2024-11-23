@@ -1,3 +1,15 @@
+
+// --------------------------------------------
+// Author: Joseph Kehoe (Joseph.Kehoe@setu.ie)
+// Created on 30/9/2024
+// Modified by: Kirubel Temesgen C00260396
+// Description:
+// Producer - Consumer concurrency -> Producer should produce while (empty) consumer consumes (full)
+// Issues:
+// None
+// --------------------------------------------
+
+
 #include "SafeBuffer.h"
 #include "Event.h"
 #include "Semaphore.h"
